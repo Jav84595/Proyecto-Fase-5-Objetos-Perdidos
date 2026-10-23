@@ -1,4 +1,5 @@
 import java.awt.GridLayout;
+import javax.swing.JPanel;
 import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -9,7 +10,7 @@ import javax.swing.WindowConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-public class DevolucionView extends JFrame {
+public class DevolucionView extends JPanel {
     private final JTextField txtObjetoId = new JTextField();
     private final JTextField txtPropietario = new JTextField();
     private final JTextField txtVerificacion = new JTextField();
@@ -17,8 +18,6 @@ public class DevolucionView extends JFrame {
     private final JButton btnHistorial = new JButton("Ver historial");
 
     public DevolucionView() {
-        setTitle("Devolución de objeto");
-        setSize(440, 270);
         setLayout(new GridLayout(5, 2, 5, 5));
         add(new JLabel("ID del objeto:"));
         add(txtObjetoId);
@@ -48,8 +47,6 @@ public class DevolucionView extends JFrame {
         txtPropietario.getDocument().addDocumentListener(actualizarBoton);
         txtVerificacion.getDocument().addDocumentListener(actualizarBoton);
         actualizarDisponibilidad();
-        getRootPane().setDefaultButton(btnDevolver);
-        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
     }
 
     private void actualizarDisponibilidad() {

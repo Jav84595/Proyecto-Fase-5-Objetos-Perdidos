@@ -1,3 +1,5 @@
+import java.awt.BorderLayout;
+import javax.swing.JPanel;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
@@ -6,74 +8,76 @@ public class Main {
         try {
             ConexionBD.inicializarBaseDatos();
         } catch (IllegalStateException e) {
-            JOptionPane.showMessageDialog(
-                    null,
+            JOptionPane.showMessageDialog(null,
                     "No se pudo iniciar la base de datos.\n" + e.getMessage(),
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE
-            );
+                    "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
         SwingUtilities.invokeLater(() -> {
             RegistroUsuarioView registroUsuarioView = new RegistroUsuarioView();
             LoginView loginView = new LoginView();
-            UsuarioDAO usuarioDAO = new UsuarioDAO();
-            UsuarioController usuarioController =
-                    new UsuarioController(usuarioDAO, registroUsuarioView, loginView);
+            UsuarioController usuarioController = new UsuarioController(
+                    new UsuarioDAO(), registroUsuarioView, loginView);
 
             RegistroObjetoView registroObjetoView = new RegistroObjetoView();
             ConsultaObjetoView consultaObjetoView = new ConsultaObjetoView();
-            ObjetoDAO objetoDAO = new ObjetoDAO();
             ObjetoController objetoController = new ObjetoController(
-                    registroObjetoView,
-                    consultaObjetoView,
-                    objetoDAO,
-                    usuarioController::autorizarOperacion
-            );
+                    registroObjetoView, consultaObjetoView, new ObjetoDAO(),
+                    usuarioController::autorizarOperacion);
 
             DevolucionView devolucionView = new DevolucionView();
-            DevolucionDAO devolucionDAO = new DevolucionDAO();
             DevolucionController devolucionController = new DevolucionController(
-                    objetoController,
-                    devolucionDAO,
-                    devolucionView,
-                    usuarioController::getUsuarioActivo
-            );
-
+                    objetoController, new DevolucionDAO(), devolucionView,
+                    usuarioController::getUsuarioActivo);
             ConsultaDevolucionesView historialView = new ConsultaDevolucionesView();
             historialView.agregarActualizarListener(e ->
                     historialView.mostrarDevoluciones(devolucionController.consultarDevoluciones()));
+
+            MenuPrincipalView menu = new MenuPrincipalView();
+            menu.agregarPestana("Registrar objeto", extraerPanel(registroObjetoView));
+            menu.agregarPestana("Consultar objetos", extraerPanel(consultaObjetoView));
+            menu.agregarPestana("Devoluciones", devolucionView);
+            menu.agregarPestana("Historial", historialView);
+
             devolucionView.agregarHistorialListener(e -> {
                 historialView.mostrarDevoluciones(devolucionController.consultarDevoluciones());
-                historialView.setLocationRelativeTo(devolucionView);
-                historialView.setVisible(true);
+                menu.seleccionarPestana(4);
+            });
+            menu.agregarCerrarSesionListener(e -> {
+                usuarioController.cerrarSesion();
+                loginView.mostrarSesionCerrada();
+                loginView.mostrarInicioSesion();
             });
 
-            registroUsuarioView.setLocation(20, 20);
-            loginView.setLocation(390, 20);
-            registroObjetoView.setLocation(20, 280);
-            consultaObjetoView.setLocation(440, 280);
-            devolucionView.setLocation(760, 20);
-
-            registroUsuarioView.setVisible(true);
+            loginView.integrarRegistro(registroUsuarioView);
+            registroUsuarioView.setVisible(false);
             loginView.setVisible(true);
-            // Mantener los modulos protegidos ocultos hasta autenticar.
-            registroObjetoView.setVisible(false);
-            consultaObjetoView.setVisible(false);
-            devolucionView.setVisible(false);
-            historialView.setVisible(false);
+            menu.setVisible(false);
 
-            // Reaccionar inmediatamente a los cambios de sesion.
             usuarioController.agregarObservadorSesion(usuario -> {
                 boolean activa = usuario != null;
-                registroObjetoView.setVisible(activa);
-                consultaObjetoView.setVisible(activa);
-                devolucionView.setVisible(activa);
-                if (!activa) {
-                    historialView.setVisible(false);
+                if (activa) {
+                    menu.mostrarUsuario(usuario.getNombreUsuario());
+                    consultaObjetoView.mostrarObjetos(objetoController.consultarObjetos());
+                    historialView.mostrarDevoluciones(devolucionController.consultarDevoluciones());
+                    menu.seleccionarPestana(0);
+                } else {
+                    menu.seleccionarPestana(0);
+                    menu.mostrarUsuario("Sin sesión activa");
                 }
+                menu.setVisible(activa);
+                loginView.setVisible(!activa);
             });
         });
+    }
+
+    // Adaptador temporal para vistas JFrame existentes hasta que Rivera entregue JPanel.
+    private static JPanel extraerPanel(javax.swing.JFrame vista) {
+        JPanel panel = new JPanel(new BorderLayout());
+        java.awt.Container contenido = vista.getContentPane();
+        vista.setContentPane(new JPanel());
+        panel.add(contenido, BorderLayout.CENTER);
+        return panel;
     }
 }
