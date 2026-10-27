@@ -1,12 +1,18 @@
 import java.time.LocalDate;
 import java.util.List;
 import java.util.function.Supplier;
+import java.util.function.Consumer;
 
 public class DevolucionController {
     private final ObjetoController objetoController;
     private final DevolucionDAO devolucionDAO;
     private final DevolucionView view;
     private final Supplier<Usuario> usuarioActual;
+    private Consumer<Objeto> observadorDevolucion;
+
+    public void agregarObservadorDevolucion(Consumer<Objeto> observador) {
+        this.observadorDevolucion = observador;
+    }
 
     public DevolucionController(
             ObjetoController objetoController,
@@ -48,7 +54,17 @@ public class DevolucionController {
                 LocalDate.now(),
                 responsable.getNombreUsuario()
         );
-        return devolucionDAO.registrarDevolucion(devolucion);
+        boolean registrada = devolucionDAO.registrarDevolucion(devolucion);
+        if (registrada && observadorDevolucion != null) {
+            // El aviso es secundario: nunca revierte una devolucion confirmada.
+            try {
+                Objeto objeto = objetoController.buscarPorId(objetoId);
+                if (objeto != null) observadorDevolucion.accept(objeto);
+            } catch (RuntimeException ex) {
+                System.err.println("No se pudo emitir el evento de devolucion: " + ex.getMessage());
+            }
+        }
+        return registrada;
     }
 
     public List<Devolucion> consultarDevoluciones() {
