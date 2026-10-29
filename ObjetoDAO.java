@@ -31,6 +31,8 @@ public class ObjetoDAO {
     }
 
     public boolean guardar(Objeto objeto) {
+        if (objeto == null || objeto.getDescripcion() == null
+                || objeto.getDescripcion().trim().isEmpty()) return false;
         String sql = "INSERT INTO objetos "
                 + "(nombre, descripcion, lugar_encontrado, fecha_encontrado, estado) "
                 + "VALUES (?, ?, ?, ?, ?)";
@@ -45,6 +47,50 @@ public class ObjetoDAO {
         } catch (SQLException e) {
             System.err.println("Error al guardar objeto: " + e.getMessage());
             return false;
+        }
+    }
+
+    // Inserta y devuelve el registro con el ID asignado por SQLite.
+    // null indica que la insercion no se completo.
+    public Objeto guardarYObtener(Objeto objeto) {
+        if (objeto == null || objeto.getDescripcion() == null
+                || objeto.getDescripcion().trim().isEmpty()
+                || objeto.getNombre() == null
+                || objeto.getNombre().trim().isEmpty()
+                || objeto.getLugarEncontrado() == null
+                || objeto.getLugarEncontrado().trim().isEmpty()
+                || objeto.getFechaEncontrado() == null
+                || objeto.getFechaEncontrado().isAfter(LocalDate.now())) return null;
+        String sql = "INSERT INTO objetos (nombre, descripcion, lugar_encontrado, fecha_encontrado, estado) VALUES (?, ?, ?, ?, ?)";
+        try (Connection c = ConexionBD.obtenerConexion()) {
+            c.setAutoCommit(false);
+            try {
+                try (PreparedStatement ps = c.prepareStatement(sql)) {
+                    ps.setString(1, objeto.getNombre());
+                    ps.setString(2, objeto.getDescripcion());
+                    ps.setString(3, objeto.getLugarEncontrado());
+                    ps.setString(4, objeto.getFechaEncontrado().toString());
+                    ps.setString(5, objeto.getEstado());
+                    if (ps.executeUpdate() != 1) { c.rollback(); return null; }
+                }
+                int id;
+                try (Statement st = c.createStatement();
+                     ResultSet rs = st.executeQuery("SELECT last_insert_rowid()")) {
+                    if (!rs.next()) { c.rollback(); return null; }
+                    id = rs.getInt(1);
+                }
+                if (id <= 0) { c.rollback(); return null; }
+                c.commit();
+                return new Objeto(id, objeto.getNombre(), objeto.getDescripcion(),
+                        objeto.getLugarEncontrado(), objeto.getFechaEncontrado(), objeto.getEstado());
+            } catch (SQLException ex) {
+                c.rollback();
+                System.err.println("Error al guardar objeto y obtener ID: " + ex.getMessage());
+                return null;
+            }
+        } catch (SQLException ex) {
+            System.err.println("Error de conexion al guardar objeto: " + ex.getMessage());
+            return null;
         }
     }
 
@@ -134,6 +180,7 @@ public class ObjetoDAO {
 
     public boolean modificarDatos(int id, String nombre, String descripcion, String lugar, LocalDate fecha) {
         if (id <= 0 || nombre == null || nombre.trim().isEmpty()
+                || descripcion == null || descripcion.trim().isEmpty()
                 || lugar == null || lugar.trim().isEmpty() || fecha == null
                 || fecha.isAfter(LocalDate.now())) return false;
         String sql = "UPDATE objetos SET nombre=?, descripcion=?, lugar_encontrado=?, fecha_encontrado=? WHERE id=?";

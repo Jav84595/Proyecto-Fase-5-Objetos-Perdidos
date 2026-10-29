@@ -1,4 +1,8 @@
 import java.awt.GridLayout;
+import java.awt.BorderLayout;
+import java.awt.CardLayout;
+import java.awt.Container;
+import javax.swing.JPanel;
 import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -11,6 +15,10 @@ import javax.swing.WindowConstants;
 public class LoginView extends JFrame {
     private final JTextField txtUsuario = new JTextField();
     private final JPasswordField txtContrasena = new JPasswordField();
+    private final JButton btnCrearCuenta = new JButton("Crear cuenta");
+    private final JButton btnVolver = new JButton("Volver al inicio de sesión");
+    private final CardLayout tarjetas = new CardLayout();
+    private final JPanel contenedorTarjetas = new JPanel(tarjetas);
     private final JButton btnIngresar = new JButton("Ingresar");
     private final JButton btnCerrarSesion = new JButton("Cerrar sesión");
     private final JLabel lblSesion = new JLabel("Sin sesión activa");
@@ -33,6 +41,41 @@ public class LoginView extends JFrame {
         btnCerrarSesion.setEnabled(false);
         getRootPane().setDefaultButton(btnIngresar);
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+    }
+
+    public void integrarRegistro(RegistroUsuarioView registroView) {
+        Container formularioLogin = getContentPane();
+        setContentPane(new JPanel(new BorderLayout()));
+        JPanel inicio = new JPanel(new BorderLayout(5, 5));
+        inicio.add(formularioLogin, BorderLayout.CENTER);
+        JPanel acciones = new JPanel();
+        acciones.add(btnCrearCuenta);
+        inicio.add(acciones, BorderLayout.SOUTH);
+
+        Container formularioRegistro = registroView.getContentPane();
+        registroView.setContentPane(new JPanel());
+        JPanel registro = new JPanel(new BorderLayout(5, 5));
+        registro.add(formularioRegistro, BorderLayout.CENTER);
+        JPanel retorno = new JPanel();
+        retorno.add(btnVolver);
+        registro.add(retorno, BorderLayout.SOUTH);
+
+        contenedorTarjetas.add(inicio, "login");
+        contenedorTarjetas.add(registro, "registro");
+        getContentPane().add(contenedorTarjetas, BorderLayout.CENTER);
+        btnCrearCuenta.addActionListener(e -> mostrarRegistro());
+        btnVolver.addActionListener(e -> mostrarInicioSesion());
+        setSize(420, 280);
+        setLocationRelativeTo(null);
+        mostrarInicioSesion();
+    }
+
+    public void mostrarRegistro() {
+        tarjetas.show(contenedorTarjetas, "registro");
+    }
+
+    public void mostrarInicioSesion() {
+        tarjetas.show(contenedorTarjetas, "login");
     }
 
     public String getNombreUsuario() {

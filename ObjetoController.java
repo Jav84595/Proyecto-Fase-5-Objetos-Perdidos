@@ -1,6 +1,8 @@
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.function.Consumer;
 import java.util.function.BooleanSupplier;
 import javax.swing.JOptionPane;
 
@@ -9,6 +11,25 @@ public class ObjetoController {
     private final RegistroObjetoView registroView;
     private final ConsultaObjetoView consultaView;
     private final BooleanSupplier autorizador;
+    private final List<Consumer<Objeto>> observadoresRegistro = new ArrayList<>();
+    private final List<Consumer<Objeto>> observadoresEdicion = new ArrayList<>();
+
+    public void agregarObservadorRegistro(Consumer<Objeto> observador) {
+        if (observador != null) observadoresRegistro.add(observador);
+    }
+
+    public void agregarObservadorEdicion(Consumer<Objeto> observador) {
+        if (observador != null) observadoresEdicion.add(observador);
+    }
+
+    private void avisar(List<Consumer<Objeto>> observadores, Objeto objeto) {
+        for (Consumer<Objeto> observador : new ArrayList<>(observadores)) {
+            try { observador.accept(objeto); }
+            catch (RuntimeException e) {
+                System.err.println("No se pudo procesar evento de objeto: " + e.getMessage());
+            }
+        }
+    }
 
     public ObjetoController(RegistroObjetoView registroView,
             ConsultaObjetoView consultaView, ObjetoDAO objetoDAO,
@@ -32,12 +53,15 @@ public class ObjetoController {
     }
 
     public boolean registrarObjeto(String nombre, String descripcion, String lugar, String fecha) {
-        if (!autorizado() || !validarCampos(nombre, lugar, fecha)) return false;
+        if (!autorizado() || !validarCampos(nombre, descripcion, lugar, fecha)) return false;
         try {
             LocalDate encontrado = LocalDate.parse(fecha.trim());
             if (encontrado.isAfter(LocalDate.now())) return false;
-            return objetoDAO.guardar(new Objeto(0, nombre.trim(),
+            Objeto guardado = objetoDAO.guardarYObtener(new Objeto(0, nombre.trim(),
                     descripcion == null ? "" : descripcion.trim(), lugar.trim(), encontrado));
+            if (guardado == null) return false;
+            avisar(observadoresRegistro, guardado);
+            return true;
         } catch (DateTimeParseException e) {
             return false;
         }
@@ -67,11 +91,14 @@ public class ObjetoController {
     }
 
     public boolean modificarObjeto(int id, String nombre, String descripcion, String lugar, String fecha) {
-        if (!autorizado() || id <= 0 || !validarCampos(nombre, lugar, fecha)) return false;
+        if (!autorizado() || id <= 0 || !validarCampos(nombre, descripcion, lugar, fecha)) return false;
         try {
             LocalDate encontrada = LocalDate.parse(fecha.trim());
             if (encontrada.isAfter(LocalDate.now())) return false;
-            return objetoDAO.modificarDatos(id, nombre, descripcion, lugar, encontrada);
+            if (!objetoDAO.modificarDatos(id, nombre, descripcion, lugar, encontrada)) return false;
+            Objeto actualizado = objetoDAO.buscarPorId(id);
+            if (actualizado != null) avisar(observadoresEdicion, actualizado);
+            return true;
         } catch (DateTimeParseException e) {
             return false;
         }
@@ -86,8 +113,9 @@ public class ObjetoController {
         return false;
     }
 
-    private boolean validarCampos(String nombre, String lugar, String fecha) {
+    private boolean validarCampos(String nombre, String descripcion, String lugar, String fecha) {
         return nombre != null && !nombre.trim().isEmpty()
+                && descripcion != null && !descripcion.trim().isEmpty()
                 && lugar != null && !lugar.trim().isEmpty()
                 && fecha != null && !fecha.trim().isEmpty();
     }
@@ -106,7 +134,7 @@ public class ObjetoController {
         boolean registrado = registrarObjeto(registroView.getNombreObjeto(),
                 registroView.getDescripcion(), registroView.getLugar(), registroView.getFecha());
         registroView.mostrarMensaje(registrado ? "Objeto registrado correctamente."
-                : "No se pudo registrar el objeto. Revise el nombre, lugar y fecha (AAAA-MM-DD). La fecha no puede ser futura.");
+                : "No se pudo registrar el objeto. El nombre, la descripcion, el lugar y la fecha son obligatorios y no pueden estar vacios. La fecha debe tener el formato AAAA-MM-DD y no puede ser futura.");
         if (registrado) {
             registroView.limpiarCampos();
             consultaView.mostrarObjetos(consultarObjetos());
@@ -134,7 +162,7 @@ public class ObjetoController {
             consultaView.mostrarObjetos(consultarObjetos());
             consultaView.mostrarMensaje("Objeto actualizado correctamente.");
         } else {
-            consultaView.mostrarMensaje("No se pudo actualizar. Verifique los campos y la fecha.");
+            consultaView.mostrarMensaje("No se pudo actualizar el objeto. El nombre, la descripcion, el lugar y la fecha son obligatorios y no pueden estar vacios. La fecha debe tener el formato AAAA-MM-DD y no puede ser futura.");
         }
     }
 

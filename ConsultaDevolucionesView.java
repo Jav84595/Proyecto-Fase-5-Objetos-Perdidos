@@ -6,7 +6,7 @@ import java.util.*;
 import java.util.List;
 import javax.swing.*;
 
-public class ConsultaDevolucionesView extends JFrame {
+public class ConsultaDevolucionesView extends JPanel {
     private final JTextArea area = new JTextArea();
     private final JButton actualizar = new JButton("Mostrar todos");
     private final JButton buscar = new JButton("Buscar");
@@ -19,8 +19,6 @@ public class ConsultaDevolucionesView extends JFrame {
     private List<Devolucion> registros = new ArrayList<>();
 
     public ConsultaDevolucionesView() {
-        setTitle("Historial de devoluciones");
-        setSize(900, 420);
         JPanel barra = new JPanel(new FlowLayout(FlowLayout.LEFT));
         barra.add(new JLabel("Filtrar por:"));
         barra.add(tipo);
@@ -34,7 +32,6 @@ public class ConsultaDevolucionesView extends JFrame {
         buscar.addActionListener(e -> filtrar());
         texto.addActionListener(e -> filtrar());
         actualizar.addActionListener(e -> { texto.setText(""); tipo.setSelectedIndex(0); });
-        setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
     }
 
     public void agregarActualizarListener(ActionListener listener) {

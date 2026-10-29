@@ -1,78 +1,132 @@
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 public class Main {
     public static void main(String[] args) {
         try {
             ConexionBD.inicializarBaseDatos();
         } catch (IllegalStateException e) {
-            JOptionPane.showMessageDialog(
-                    null,
+            JOptionPane.showMessageDialog(null,
                     "No se pudo iniciar la base de datos.\n" + e.getMessage(),
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE
-            );
+                    "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
         SwingUtilities.invokeLater(() -> {
             RegistroUsuarioView registroUsuarioView = new RegistroUsuarioView();
             LoginView loginView = new LoginView();
-            UsuarioDAO usuarioDAO = new UsuarioDAO();
-            UsuarioController usuarioController =
-                    new UsuarioController(usuarioDAO, registroUsuarioView, loginView);
+            UsuarioController usuarioController = new UsuarioController(
+                    new UsuarioDAO(), registroUsuarioView, loginView);
 
             RegistroObjetoView registroObjetoView = new RegistroObjetoView();
             ConsultaObjetoView consultaObjetoView = new ConsultaObjetoView();
-            ObjetoDAO objetoDAO = new ObjetoDAO();
             ObjetoController objetoController = new ObjetoController(
-                    registroObjetoView,
-                    consultaObjetoView,
-                    objetoDAO,
-                    usuarioController::autorizarOperacion
-            );
+                    registroObjetoView, consultaObjetoView, new ObjetoDAO(),
+                    usuarioController::autorizarOperacion);
 
             DevolucionView devolucionView = new DevolucionView();
-            DevolucionDAO devolucionDAO = new DevolucionDAO();
             DevolucionController devolucionController = new DevolucionController(
-                    objetoController,
-                    devolucionDAO,
-                    devolucionView,
-                    usuarioController::getUsuarioActivo
-            );
-
+                    objetoController, new DevolucionDAO(), devolucionView,
+                    usuarioController::getUsuarioActivo);
             ConsultaDevolucionesView historialView = new ConsultaDevolucionesView();
             historialView.agregarActualizarListener(e ->
                     historialView.mostrarDevoluciones(devolucionController.consultarDevoluciones()));
-            devolucionView.agregarHistorialListener(e -> {
-                historialView.mostrarDevoluciones(devolucionController.consultarDevoluciones());
-                historialView.setLocationRelativeTo(devolucionView);
-                historialView.setVisible(true);
+
+            NotificacionController notificacionController = new NotificacionController(
+                    new NotificacionDAO(), usuarioController::getUsuarioActivo);
+            NotificacionView notificacionView = new NotificacionView();
+            NotificacionWindows avisosWindows = new NotificacionWindows();
+            notificacionView.agregarActualizarListener(e ->
+                    notificacionView.mostrarNotificaciones(
+                            notificacionController.consultarNotificaciones()));
+
+            objetoController.agregarObservadorRegistro(objeto -> {
+                boolean guardada = notificacionController.notificarObjetoRegistrado(
+                        objeto.getId(), objeto.getNombre());
+                if (guardada) {
+                    notificacionView.mostrarNotificaciones(
+                            notificacionController.consultarNotificaciones());
+                    avisosWindows.mostrarNotificacion("Nuevo objeto encontrado",
+                            "Se registro el objeto: " + objeto.getNombre());
+                } else {
+                    System.err.println("Objeto registrado; no se pudo guardar su notificacion.");
+                }
+            });
+            objetoController.agregarObservadorEdicion(objeto -> {
+                boolean guardada = notificacionController.notificarObjetoModificado(
+                        objeto.getId(), objeto.getNombre());
+                if (guardada) {
+                    notificacionView.mostrarNotificaciones(
+                            notificacionController.consultarNotificaciones());
+                    avisosWindows.mostrarNotificacion("Objeto actualizado",
+                            "Se actualizo el objeto: " + objeto.getNombre());
+                } else {
+                    System.err.println("Objeto actualizado; no se pudo guardar su notificacion.");
+                }
             });
 
-            registroUsuarioView.setLocation(20, 20);
-            loginView.setLocation(390, 20);
-            registroObjetoView.setLocation(20, 280);
-            consultaObjetoView.setLocation(440, 280);
-            devolucionView.setLocation(760, 20);
+            devolucionController.agregarObservadorDevolucion(objeto -> {
+                boolean guardada = notificacionController.notificarObjetoDevuelto(
+                        objeto.getId(), objeto.getNombre());
+                if (guardada) {
+                    notificacionView.mostrarNotificaciones(
+                            notificacionController.consultarNotificaciones());
+                    avisosWindows.mostrarNotificacion(
+                            "Objeto devuelto", "Se devolvio el objeto: " + objeto.getNombre());
+                } else {
+                    System.err.println("La devolucion se registro, pero no se pudo guardar su notificacion.");
+                }
+            });
 
-            registroUsuarioView.setVisible(true);
+            MenuPrincipalView menu = new MenuPrincipalView();
+            menu.addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosing(WindowEvent e) {
+                    avisosWindows.cerrar();
+                    usuarioController.cerrarSesion();
+                    loginView.mostrarSesionCerrada();
+                    loginView.mostrarInicioSesion();
+                }
+            });
+            menu.agregarPestana("Registrar objeto", registroObjetoView);
+            menu.agregarPestana("Consultar objetos", consultaObjetoView);
+            menu.agregarPestana("Devoluciones", devolucionView);
+            menu.agregarPestana("Historial", historialView);
+            menu.agregarPestana("Notificaciones", notificacionView);
+
+            devolucionView.agregarHistorialListener(e -> {
+                historialView.mostrarDevoluciones(devolucionController.consultarDevoluciones());
+                menu.seleccionarPestana(3);
+            });
+            menu.agregarCerrarSesionListener(e -> {
+                usuarioController.cerrarSesion();
+                loginView.mostrarSesionCerrada();
+                loginView.mostrarInicioSesion();
+            });
+
+            loginView.integrarRegistro(registroUsuarioView);
+            registroUsuarioView.setVisible(false);
             loginView.setVisible(true);
-            // Mantener los modulos protegidos ocultos hasta autenticar.
-            registroObjetoView.setVisible(false);
-            consultaObjetoView.setVisible(false);
-            devolucionView.setVisible(false);
-            historialView.setVisible(false);
+            menu.setVisible(false);
 
-            // Reaccionar inmediatamente a los cambios de sesion.
             usuarioController.agregarObservadorSesion(usuario -> {
                 boolean activa = usuario != null;
-                registroObjetoView.setVisible(activa);
-                consultaObjetoView.setVisible(activa);
-                devolucionView.setVisible(activa);
-                if (!activa) {
-                    historialView.setVisible(false);
+                if (activa) {
+                    menu.mostrarUsuario(usuario.getNombreUsuario());
+                    consultaObjetoView.mostrarObjetos(objetoController.consultarObjetos());
+                    historialView.mostrarDevoluciones(devolucionController.consultarDevoluciones());
+                    notificacionView.mostrarNotificaciones(
+                            notificacionController.consultarNotificaciones());
+                    menu.seleccionarPestana(0);
+                } else {
+                    menu.seleccionarPestana(0);
+                    menu.mostrarUsuario("Sin sesión activa");
+                    notificacionView.limpiarNotificaciones();
                 }
+                menu.setVisible(activa);
+                loginView.setVisible(!activa);
             });
         });
     }
