@@ -1,10 +1,11 @@
 import java.awt.GridLayout;
+import java.awt.Component;
 import javax.swing.*;
 public class EditarObjetoView {
     private final JPanel panel = new JPanel(new GridLayout(4, 2, 6, 6));
     private final JTextField nombre, descripcion, lugar, fecha;
-    private final JFrame padre;
-    public EditarObjetoView(JFrame padre, Objeto objeto) {
+    private final Component padre;
+    public EditarObjetoView(Component padre, Objeto objeto) {
         this.padre = padre;
         nombre = new JTextField(objeto.getNombre());
         descripcion = new JTextField(objeto.getDescripcion());
