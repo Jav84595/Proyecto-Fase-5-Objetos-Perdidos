@@ -23,6 +23,8 @@ public class RegistroObjetoView extends JPanel {
         add(new JLabel("Lugar:")); add(txtLugar);
         add(new JLabel("Fecha (AAAA-MM-DD):")); add(txtFecha);
         add(new JLabel()); add(btnRegistrar);
+    
+        EstiloUVG.aplicar(this);
     }
 
     public String getNombreObjeto() { return txtNombre.getText().trim(); }
