@@ -39,6 +39,8 @@ public class NotificacionView extends JPanel {
         add(lblContador, BorderLayout.SOUTH);
 
         mostrarNotificaciones(null);
+    
+        EstiloUVG.aplicar(this);
     }
 
     public void agregarActualizarListener(ActionListener listener) {

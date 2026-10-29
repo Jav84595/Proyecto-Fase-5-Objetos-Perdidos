@@ -4,7 +4,31 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 public class ConexionBD {
-    private static final String URL = "jdbc:sqlite:objetos_perdidos.db";
+    private static final String URL = construirURL();
+    private static String construirURL() {
+    String localAppData = System.getenv("LOCALAPPDATA");
+
+    java.nio.file.Path carpeta;
+
+    if (localAppData != null && !localAppData.isBlank()) {
+        carpeta = java.nio.file.Paths.get(
+                localAppData, "SistemaObjetosPerdidos");
+    } else {
+        carpeta = java.nio.file.Paths.get(
+                System.getProperty("user.home"),
+                "SistemaObjetosPerdidos");
+    }
+
+    try {
+        java.nio.file.Files.createDirectories(carpeta);
+    } catch (java.io.IOException e) {
+        throw new IllegalStateException(
+                "No se pudo crear la carpeta de datos.", e);
+    }
+
+    return "jdbc:sqlite:"
+            + carpeta.resolve("objetos_perdidos.db").toAbsolutePath();
+}
 
     private ConexionBD() {
     }
