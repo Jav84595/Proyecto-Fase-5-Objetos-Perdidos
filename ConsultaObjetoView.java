@@ -6,7 +6,7 @@ import java.util.*;
 import java.util.List;
 import javax.swing.*;
 
-public class ConsultaObjetoView extends JFrame {
+public class ConsultaObjetoView extends JPanel {
     private final JTextField txtBusqueda = new JTextField(14);
     private final JComboBox<String> criterio = new JComboBox<>(new String[] {
         "Todos los campos", "ID", "Nombre", "Descripcion", "Lugar", "Fecha (AAAA-MM-DD)"});
@@ -23,7 +23,7 @@ public class ConsultaObjetoView extends JFrame {
     private List<Objeto> datos = new ArrayList<>();
 
     public ConsultaObjetoView() {
-        setTitle("Consulta de objetos"); setSize(850, 430);
+        setLayout(new BorderLayout());
         JPanel superior = new JPanel(new GridLayout(2, 1));
         JPanel filtros = new JPanel(new FlowLayout(FlowLayout.LEFT));
         filtros.add(new JLabel("Buscar:")); filtros.add(criterio); filtros.add(txtBusqueda);
@@ -41,7 +41,6 @@ public class ConsultaObjetoView extends JFrame {
         btnMostrarDevueltos.addActionListener(e -> estado.setSelectedItem("DEVUELTO"));
         criterio.addActionListener(e -> filtrar());
         estado.addActionListener(e -> filtrar());
-        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
     }
     public String getTextoBusqueda() { return txtBusqueda.getText().trim(); }
     public void agregarBusquedaListener(ActionListener l) { btnBuscar.addActionListener(l); }

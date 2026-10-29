@@ -2,13 +2,13 @@ import java.awt.GridLayout;
 import java.awt.event.ActionListener;
 import java.time.LocalDate;
 import javax.swing.JButton;
-import javax.swing.JFrame;
+import javax.swing.JPanel;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
-import javax.swing.WindowConstants;
+import javax.swing.BorderFactory;
 
-public class RegistroObjetoView extends JFrame {
+public class RegistroObjetoView extends JPanel {
     private JTextField txtNombre = new JTextField();
     private JTextField txtDescripcion = new JTextField();
     private JTextField txtLugar = new JTextField();
@@ -16,15 +16,13 @@ public class RegistroObjetoView extends JFrame {
     private JButton btnRegistrar = new JButton("Registrar objeto");
 
     public RegistroObjetoView() {
-        setTitle("Registro de objeto encontrado");
-        setSize(400, 240);
+        setBorder(BorderFactory.createEmptyBorder(16, 16, 16, 16));
         setLayout(new GridLayout(5, 2, 5, 5));
         add(new JLabel("Nombre:")); add(txtNombre);
         add(new JLabel("Descripción:")); add(txtDescripcion);
         add(new JLabel("Lugar:")); add(txtLugar);
         add(new JLabel("Fecha (AAAA-MM-DD):")); add(txtFecha);
         add(new JLabel()); add(btnRegistrar);
-        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
     }
 
     public String getNombreObjeto() { return txtNombre.getText().trim(); }
