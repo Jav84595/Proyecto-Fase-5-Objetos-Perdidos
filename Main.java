@@ -1,5 +1,3 @@
-import java.awt.BorderLayout;
-import javax.swing.JPanel;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import java.awt.event.WindowAdapter;
@@ -44,6 +42,31 @@ public class Main {
                     notificacionView.mostrarNotificaciones(
                             notificacionController.consultarNotificaciones()));
 
+            objetoController.agregarObservadorRegistro(objeto -> {
+                boolean guardada = notificacionController.notificarObjetoRegistrado(
+                        objeto.getId(), objeto.getNombre());
+                if (guardada) {
+                    notificacionView.mostrarNotificaciones(
+                            notificacionController.consultarNotificaciones());
+                    avisosWindows.mostrarNotificacion("Nuevo objeto encontrado",
+                            "Se registro el objeto: " + objeto.getNombre());
+                } else {
+                    System.err.println("Objeto registrado; no se pudo guardar su notificacion.");
+                }
+            });
+            objetoController.agregarObservadorEdicion(objeto -> {
+                boolean guardada = notificacionController.notificarObjetoModificado(
+                        objeto.getId(), objeto.getNombre());
+                if (guardada) {
+                    notificacionView.mostrarNotificaciones(
+                            notificacionController.consultarNotificaciones());
+                    avisosWindows.mostrarNotificacion("Objeto actualizado",
+                            "Se actualizo el objeto: " + objeto.getNombre());
+                } else {
+                    System.err.println("Objeto actualizado; no se pudo guardar su notificacion.");
+                }
+            });
+
             devolucionController.agregarObservadorDevolucion(objeto -> {
                 boolean guardada = notificacionController.notificarObjetoDevuelto(
                         objeto.getId(), objeto.getNombre());
@@ -67,8 +90,8 @@ public class Main {
                     loginView.mostrarInicioSesion();
                 }
             });
-            menu.agregarPestana("Registrar objeto", extraerPanel(registroObjetoView));
-            menu.agregarPestana("Consultar objetos", extraerPanel(consultaObjetoView));
+            menu.agregarPestana("Registrar objeto", registroObjetoView);
+            menu.agregarPestana("Consultar objetos", consultaObjetoView);
             menu.agregarPestana("Devoluciones", devolucionView);
             menu.agregarPestana("Historial", historialView);
             menu.agregarPestana("Notificaciones", notificacionView);
@@ -106,14 +129,5 @@ public class Main {
                 loginView.setVisible(!activa);
             });
         });
-    }
-
-    // Adaptador temporal para vistas JFrame existentes hasta que Rivera entregue JPanel.
-    private static JPanel extraerPanel(javax.swing.JFrame vista) {
-        JPanel panel = new JPanel(new BorderLayout());
-        java.awt.Container contenido = vista.getContentPane();
-        vista.setContentPane(new JPanel());
-        panel.add(contenido, BorderLayout.CENTER);
-        return panel;
     }
 }
