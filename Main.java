@@ -106,6 +106,20 @@ public class Main {
                 loginView.mostrarInicioSesion();
             });
 
+            loginView.agregarSalirListener(e -> {
+                int respuesta = JOptionPane.showConfirmDialog(loginView,
+                        "¿Desea salir del programa?", "Confirmar salida",
+                        JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                if (respuesta == JOptionPane.YES_OPTION) {
+                    avisosWindows.cerrar();
+                    usuarioController.cerrarSesion();
+                    menu.dispose();
+                    registroUsuarioView.dispose();
+                    loginView.dispose();
+                    System.exit(0);
+                }
+            });
+
             loginView.integrarRegistro(registroUsuarioView);
             registroUsuarioView.setVisible(false);
             loginView.setVisible(true);
