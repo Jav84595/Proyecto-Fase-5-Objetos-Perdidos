@@ -1,3 +1,8 @@
 bin/
 *.class
 objetos_perdidos.db
+empaquetado/
+respaldo_bd/
+*.db
+*.db-shm
+*.db-wal

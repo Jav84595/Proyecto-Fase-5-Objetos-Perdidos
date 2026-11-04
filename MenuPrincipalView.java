@@ -23,11 +23,16 @@ public class MenuPrincipalView extends JFrame {
         setMinimumSize(new Dimension(850, 550));
         setSize(1050, 650);
         setLocationRelativeTo(null);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
 
         JPanel encabezado = new JPanel(new BorderLayout(10, 10));
         JLabel titulo = new JLabel("Sistema de Objetos Perdidos");
         titulo.setFont(new Font("SansSerif", Font.BOLD, 20));
-        encabezado.add(titulo, BorderLayout.WEST);
+        JPanel marca = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 4));
+        marca.add(EstiloUVG.etiquetaLogo(55, 55));
+        marca.add(titulo);
+        encabezado.add(marca, BorderLayout.WEST);
 
         JPanel sesion = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         sesion.add(lblUsuario);
@@ -43,6 +48,12 @@ public class MenuPrincipalView extends JFrame {
 
         setContentPane(contenido);
         agregarPestana("Inicio", crearPanelInicio());
+        EstiloUVG.aplicarVentana(this);
+        encabezado.setBackground(EstiloUVG.VERDE);
+        marca.setBackground(EstiloUVG.VERDE);
+        titulo.setForeground(java.awt.Color.WHITE);
+        sesion.setBackground(EstiloUVG.VERDE);
+        lblUsuario.setForeground(java.awt.Color.WHITE);
     }
 
     private JPanel crearPanelInicio() {
@@ -62,6 +73,7 @@ public class MenuPrincipalView extends JFrame {
                     "La pestaña necesita un título y un panel."
             );
         }
+        EstiloUVG.aplicar(panel);
         pestanas.addTab(titulo, panel);
     }
 

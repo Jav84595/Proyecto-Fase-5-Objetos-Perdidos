@@ -98,12 +98,26 @@ public class Main {
 
             devolucionView.agregarHistorialListener(e -> {
                 historialView.mostrarDevoluciones(devolucionController.consultarDevoluciones());
-                menu.seleccionarPestana(3);
+                menu.seleccionarPestana(4);
             });
             menu.agregarCerrarSesionListener(e -> {
                 usuarioController.cerrarSesion();
                 loginView.mostrarSesionCerrada();
                 loginView.mostrarInicioSesion();
+            });
+
+            loginView.agregarSalirListener(e -> {
+                int respuesta = JOptionPane.showConfirmDialog(loginView,
+                        "¿Desea salir del programa?", "Confirmar salida",
+                        JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                if (respuesta == JOptionPane.YES_OPTION) {
+                    avisosWindows.cerrar();
+                    usuarioController.cerrarSesion();
+                    menu.dispose();
+                    registroUsuarioView.dispose();
+                    loginView.dispose();
+                    System.exit(0);
+                }
             });
 
             loginView.integrarRegistro(registroUsuarioView);

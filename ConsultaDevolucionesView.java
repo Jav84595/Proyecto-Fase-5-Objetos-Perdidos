@@ -32,6 +32,8 @@ public class ConsultaDevolucionesView extends JPanel {
         buscar.addActionListener(e -> filtrar());
         texto.addActionListener(e -> filtrar());
         actualizar.addActionListener(e -> { texto.setText(""); tipo.setSelectedIndex(0); });
+    
+        EstiloUVG.aplicar(this);
     }
 
     public void agregarActualizarListener(ActionListener listener) {

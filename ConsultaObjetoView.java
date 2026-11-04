@@ -41,6 +41,8 @@ public class ConsultaObjetoView extends JPanel {
         btnMostrarDevueltos.addActionListener(e -> estado.setSelectedItem("DEVUELTO"));
         criterio.addActionListener(e -> filtrar());
         estado.addActionListener(e -> filtrar());
+    
+        EstiloUVG.aplicar(this);
     }
     public String getTextoBusqueda() { return txtBusqueda.getText().trim(); }
     public void agregarBusquedaListener(ActionListener l) { btnBuscar.addActionListener(l); }

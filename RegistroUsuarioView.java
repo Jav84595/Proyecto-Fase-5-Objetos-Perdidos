@@ -27,6 +27,7 @@ public class RegistroUsuarioView extends JFrame {
         add(new JLabel());
         add(btnRegistrar);
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        EstiloUVG.aplicarVentana(this);
     }
 
     public String getNombre() {

@@ -47,6 +47,8 @@ public class DevolucionView extends JPanel {
         txtPropietario.getDocument().addDocumentListener(actualizarBoton);
         txtVerificacion.getDocument().addDocumentListener(actualizarBoton);
         actualizarDisponibilidad();
+    
+        EstiloUVG.aplicar(this);
     }
 
     private void actualizarDisponibilidad() {
