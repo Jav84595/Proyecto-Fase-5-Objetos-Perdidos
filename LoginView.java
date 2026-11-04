@@ -6,6 +6,7 @@ public class LoginView extends JFrame {
     private final JTextField txtUsuario = new JTextField(28);
     private final JPasswordField txtContrasena = new JPasswordField(28);
     private final JButton btnCrearCuenta = new JButton("Crear cuenta");
+    private final JButton btnSalir = new JButton("Salir del programa");
     private final JButton btnVolver = new JButton("Volver al inicio de sesión");
     private final CardLayout tarjetas = new CardLayout();
     private final JPanel contenedorTarjetas = new JPanel(tarjetas);
@@ -50,7 +51,7 @@ public class LoginView extends JFrame {
         txtUsuario.setPreferredSize(new Dimension(325, 38));
         txtContrasena.setPreferredSize(new Dimension(325, 38));
         Dimension botonTamano = new Dimension(440, 46);
-        for (JButton boton : new JButton[]{btnIngresar, btnCerrarSesion, btnCrearCuenta}) {
+        for (JButton boton : new JButton[]{btnIngresar, btnCerrarSesion, btnCrearCuenta, btnSalir}) {
             boton.setPreferredSize(botonTamano);
             boton.setFont(new Font("SansSerif", Font.BOLD, 15));
         }
@@ -62,6 +63,7 @@ public class LoginView extends JFrame {
         c.gridy = 4; formulario.add(lblSesion, c);
         c.gridy = 5; formulario.add(btnCerrarSesion, c);
         c.gridy = 6; formulario.add(btnCrearCuenta, c);
+        c.gridy = 7; formulario.add(btnSalir, c);
         return centrarFormulario(formulario);
     }
 
@@ -71,7 +73,12 @@ public class LoginView extends JFrame {
         JPanel formularioRegistro = new JPanel(new BorderLayout(0, 12));
         formularioRegistro.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
         formularioRegistro.add(contenidoRegistro, BorderLayout.CENTER);
-        formularioRegistro.add(btnVolver, BorderLayout.SOUTH);
+        JPanel accionesRegistro = new JPanel(new GridLayout(2, 1, 0, 8));
+        accionesRegistro.add(btnVolver);
+        JButton btnSalirRegistro = new JButton("Salir del programa");
+        btnSalirRegistro.addActionListener(e -> btnSalir.doClick());
+        accionesRegistro.add(btnSalirRegistro);
+        formularioRegistro.add(accionesRegistro, BorderLayout.SOUTH);
         JPanel registroCentrado = centrarFormulario(formularioRegistro);
         contenedorTarjetas.add(construirInicio(), "login");
         contenedorTarjetas.add(registroCentrado, "registro");
@@ -87,6 +94,7 @@ public class LoginView extends JFrame {
     public void mostrarInicioSesion() { tarjetas.show(contenedorTarjetas, "login"); }
     public String getNombreUsuario() { return txtUsuario.getText().trim(); }
     public String getContrasena() { return new String(txtContrasena.getPassword()); }
+    public void agregarSalirListener(ActionListener listener) { btnSalir.addActionListener(listener); }
     public void agregarLoginListener(ActionListener listener) { btnIngresar.addActionListener(listener); }
     public void agregarCerrarSesionListener(ActionListener listener) { btnCerrarSesion.addActionListener(listener); }
     public void mostrarMensaje(String mensaje) { JOptionPane.showMessageDialog(this, mensaje); }

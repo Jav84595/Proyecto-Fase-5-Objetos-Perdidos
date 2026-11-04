@@ -111,7 +111,7 @@ public class UsuarioController {
     private boolean datosRegistroValidos(String nombre, String nombreUsuario, String contrasena) {
         return nombre != null && !nombre.trim().isEmpty()
                 && nombreUsuario != null && !nombreUsuario.trim().isEmpty()
-                && contrasena != null && !contrasena.isEmpty();
+                && contrasena != null && contrasena.length() >= 8;
     }
 
     private void registrarDesdeVista() {
@@ -119,6 +119,10 @@ public class UsuarioController {
         String nombreUsuario = registroView.getNombreUsuario();
         String contrasena = registroView.getContrasena();
 
+        if (contrasena == null || contrasena.length() < 8) {
+            registroView.mostrarMensaje("La contraseña debe tener al menos 8 caracteres.");
+            return;
+        }
         if (!datosRegistroValidos(nombre, nombreUsuario, contrasena)) {
             registroView.mostrarMensaje("Todos los campos son obligatorios.");
             return;
