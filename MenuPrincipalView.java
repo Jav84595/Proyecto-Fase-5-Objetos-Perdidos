@@ -19,7 +19,7 @@ public class MenuPrincipalView extends JFrame {
 
     public MenuPrincipalView() {
         setTitle("Sistema de Objetos Perdidos");
-        setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
+        setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         setMinimumSize(new Dimension(850, 550));
         setSize(1050, 650);
         setLocationRelativeTo(null);

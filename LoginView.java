@@ -94,6 +94,7 @@ public class LoginView extends JFrame {
     public void mostrarInicioSesion() { tarjetas.show(contenedorTarjetas, "login"); }
     public String getNombreUsuario() { return txtUsuario.getText().trim(); }
     public String getContrasena() { return new String(txtContrasena.getPassword()); }
+    public void solicitarSalida() { btnSalir.doClick(); }
     public void agregarSalirListener(ActionListener listener) { btnSalir.addActionListener(listener); }
     public void agregarLoginListener(ActionListener listener) { btnIngresar.addActionListener(listener); }
     public void agregarCerrarSesionListener(ActionListener listener) { btnCerrarSesion.addActionListener(listener); }

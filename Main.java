@@ -84,10 +84,7 @@ public class Main {
             menu.addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosing(WindowEvent e) {
-                    avisosWindows.cerrar();
-                    usuarioController.cerrarSesion();
-                    loginView.mostrarSesionCerrada();
-                    loginView.mostrarInicioSesion();
+                    loginView.solicitarSalida();
                 }
             });
             menu.agregarPestana("Registrar objeto", registroObjetoView);
@@ -104,6 +101,14 @@ public class Main {
                 usuarioController.cerrarSesion();
                 loginView.mostrarSesionCerrada();
                 loginView.mostrarInicioSesion();
+            });
+
+            loginView.setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
+            loginView.addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosing(WindowEvent e) {
+                    loginView.solicitarSalida();
+                }
             });
 
             loginView.agregarSalirListener(e -> {
