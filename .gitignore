@@ -6,3 +6,5 @@ respaldo_bd/
 *.db
 *.db-shm
 *.db-wal
+
+build/
