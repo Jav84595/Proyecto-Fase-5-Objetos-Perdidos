@@ -141,6 +141,7 @@ public class UsuarioController {
         if (registrarUsuario(nombre, nombreUsuario, contrasena)) {
             registroView.mostrarMensaje("Usuario registrado correctamente.");
             registroView.limpiarCampos();
+            loginView.mostrarInicioSesion();
         } else {
             registroView.mostrarMensaje("No se pudo registrar el usuario.");
         }
