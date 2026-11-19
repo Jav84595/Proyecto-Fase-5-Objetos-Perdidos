@@ -1,3 +1,4 @@
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -7,8 +8,22 @@ public class FiltroPalabrasClave implements FiltroAvanzado {
     private final String textoBusqueda;
 
     public FiltroPalabrasClave(String textoBusqueda) {
-        this.textoBusqueda = textoBusqueda == null
-                ? "" : textoBusqueda.trim().toLowerCase(Locale.ROOT);
+        this.textoBusqueda = normalizar(textoBusqueda);
+    }
+
+    private static String normalizar(String texto) {
+        if (texto == null) {
+            return "";
+        }
+
+        String resultado = Normalizer.normalize(
+                texto, Normalizer.Form.NFD);
+
+        resultado = resultado.replaceAll("\\p{M}+", "");
+
+        return resultado.toLowerCase(Locale.ROOT)
+                .trim()
+                .replaceAll("\\s+", " ");
     }
 
     @Override
@@ -24,7 +39,7 @@ public class FiltroPalabrasClave implements FiltroAvanzado {
             return resultados;
         }
 
-        String[] palabras = textoBusqueda.split("\\s+");
+        String[] palabras = textoBusqueda.split(" ");
 
         for (Objeto objeto : objetos) {
             if (objeto == null) {
@@ -37,8 +52,8 @@ public class FiltroPalabrasClave implements FiltroAvanzado {
             String descripcion = objeto.getDescripcion() == null
                     ? "" : objeto.getDescripcion();
 
-            String contenido = (nombre + " " + descripcion)
-                    .toLowerCase(Locale.ROOT);
+            String contenido = normalizar(
+                    nombre + " " + descripcion);
 
             boolean coincide = true;
 
