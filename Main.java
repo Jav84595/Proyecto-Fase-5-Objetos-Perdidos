@@ -2,6 +2,8 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
@@ -25,6 +27,25 @@ public class Main {
             ObjetoController objetoController = new ObjetoController(
                     registroObjetoView, consultaObjetoView, new ObjetoDAO(),
                     usuarioController::autorizarOperacion);
+
+            consultaObjetoView.agregarAplicarFiltrosAvanzadosListener(e -> {
+                PanelFiltrosAvanzados panel = consultaObjetoView.getPanelFiltrosAvanzados();
+                List<FiltroAvanzado> filtros = new ArrayList<>();
+                String inicio = panel.getFechaInicial();
+                String fin = panel.getFechaFinal();
+                String palabras = panel.getPalabrasClave();
+                try {
+                    if (!inicio.isEmpty() || !fin.isEmpty()) {
+                        filtros.add(new FiltroRangoFechas(inicio, fin));
+                    }
+                    if (!palabras.isEmpty()) {
+                        filtros.add(new FiltroPalabrasClave(palabras));
+                    }
+                    consultaObjetoView.aplicarFiltrosAvanzados(filtros);
+                } catch (IllegalArgumentException ex) {
+                    consultaObjetoView.mostrarMensaje(ex.getMessage());
+                }
+            });
 
             DevolucionView devolucionView = new DevolucionView();
             DevolucionController devolucionController = new DevolucionController(
@@ -95,7 +116,7 @@ public class Main {
 
             devolucionView.agregarHistorialListener(e -> {
                 historialView.mostrarDevoluciones(devolucionController.consultarDevoluciones());
-                menu.seleccionarPestana(4);
+                menu.seleccionarPestana(3);
             });
             menu.agregarCerrarSesionListener(e -> {
                 usuarioController.cerrarSesion();
