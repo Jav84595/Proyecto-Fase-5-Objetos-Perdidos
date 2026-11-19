@@ -1,6 +1,8 @@
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
-import java.awt.GridLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionListener;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -21,22 +23,29 @@ public class PanelFiltrosAvanzados extends JPanel {
         setLayout(new BorderLayout(8, 8));
         setBorder(BorderFactory.createTitledBorder("Filtros avanzados"));
 
-        JPanel campos = new JPanel(new GridLayout(2, 1, 5, 5));
+        JPanel campos = new JPanel(new GridBagLayout());
+        GridBagConstraints c = new GridBagConstraints();
+        c.insets = new Insets(5, 5, 5, 5);
+        c.anchor = GridBagConstraints.CENTER;
 
-        JPanel fechas = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        fechas.add(new JLabel("Fecha inicial:"));
+        JPanel fechas = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 0));
+        fechas.add(new JLabel("Fecha inicial (AAAA-MM-DD):"));
         fechas.add(txtFechaInicial);
-        fechas.add(new JLabel("Fecha final:"));
+        fechas.add(new JLabel("Fecha final (AAAA-MM-DD):"));
         fechas.add(txtFechaFinal);
 
-        JPanel palabras = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JPanel palabras = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 0));
         palabras.add(new JLabel("Palabras clave:"));
         palabras.add(txtPalabrasClave);
 
-        campos.add(fechas);
-        campos.add(palabras);
+        c.gridx = 0;
+        c.gridy = 0;
+        campos.add(fechas, c);
+        c.gridy = 1;
+        campos.add(palabras, c);
 
-        JPanel acciones = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JPanel acciones = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 0));
+        acciones.setBorder(BorderFactory.createEmptyBorder(0, 0, 12, 0));
         acciones.add(btnLimpiar);
         acciones.add(btnAplicar);
 

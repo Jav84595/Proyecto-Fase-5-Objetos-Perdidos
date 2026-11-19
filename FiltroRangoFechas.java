@@ -7,8 +7,7 @@ import java.util.List;
 public class FiltroRangoFechas implements FiltroAvanzado {
 
     private static final DateTimeFormatter FORMATO =
-            DateTimeFormatter.ISO_LOCAL_DATE
-                    .withResolverStyle(ResolverStyle.STRICT);
+            DateTimeFormatter.ISO_LOCAL_DATE.withResolverStyle(ResolverStyle.STRICT);
 
     private final LocalDate fechaInicial;
     private final LocalDate fechaFinal;
@@ -16,6 +15,13 @@ public class FiltroRangoFechas implements FiltroAvanzado {
     public FiltroRangoFechas(String fechaInicial, String fechaFinal) {
         this.fechaInicial = convertirFecha(fechaInicial);
         this.fechaFinal = convertirFecha(fechaFinal);
+
+        LocalDate hoy = LocalDate.now();
+        if (this.fechaInicial.isAfter(hoy) || this.fechaFinal.isAfter(hoy)) {
+            throw new IllegalArgumentException(
+                    "No se permiten fechas futuras. La fecha inicial y la fecha final "
+                    + "deben ser iguales o anteriores a la fecha actual.");
+        }
 
         if (this.fechaInicial.isAfter(this.fechaFinal)) {
             throw new IllegalArgumentException(
@@ -25,15 +31,12 @@ public class FiltroRangoFechas implements FiltroAvanzado {
 
     private static LocalDate convertirFecha(String texto) {
         if (texto == null || texto.trim().isEmpty()) {
-            throw new IllegalArgumentException(
-                    "Las fechas son obligatorias.");
+            throw new IllegalArgumentException("Las fechas son obligatorias.");
         }
 
         String fecha = texto.trim();
-
         if (!fecha.matches("\\d{4}-\\d{2}-\\d{2}")) {
-            throw new IllegalArgumentException(
-                    "Formato de fecha invalido. Use AAAA-MM-DD.");
+            throw new IllegalArgumentException("Formato de fecha invalido. Use AAAA-MM-DD.");
         }
 
         try {
@@ -47,24 +50,18 @@ public class FiltroRangoFechas implements FiltroAvanzado {
     @Override
     public List<Objeto> filtrar(List<Objeto> objetos) {
         List<Objeto> resultados = new ArrayList<>();
-
         if (objetos == null || objetos.isEmpty()) {
             return resultados;
         }
-
         for (Objeto objeto : objetos) {
             if (objeto == null || objeto.getFechaEncontrado() == null) {
                 continue;
             }
-
             LocalDate fecha = objeto.getFechaEncontrado();
-
-            if (!fecha.isBefore(fechaInicial)
-                    && !fecha.isAfter(fechaFinal)) {
+            if (!fecha.isBefore(fechaInicial) && !fecha.isAfter(fechaFinal)) {
                 resultados.add(objeto);
             }
         }
-
         return resultados;
     }
 }
