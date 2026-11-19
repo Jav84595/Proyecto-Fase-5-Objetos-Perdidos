@@ -116,7 +116,7 @@ public class Main {
 
             devolucionView.agregarHistorialListener(e -> {
                 historialView.mostrarDevoluciones(devolucionController.consultarDevoluciones());
-                menu.seleccionarPestana(3);
+                menu.seleccionarPestana(4);
             });
             menu.agregarCerrarSesionListener(e -> {
                 usuarioController.cerrarSesion();
