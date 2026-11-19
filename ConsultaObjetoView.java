@@ -21,6 +21,8 @@ public class ConsultaObjetoView extends JPanel {
     private final JList<Objeto> lista = new JList<>(modelo);
     private final JLabel contador = new JLabel("0 resultados");
     private List<Objeto> datos = new ArrayList<>();
+    private List<FiltroAvanzado> filtrosAvanzados = new ArrayList<>();
+    private final PanelFiltrosAvanzados panelAvanzado = new PanelFiltrosAvanzados();
 
     public ConsultaObjetoView() {
         setLayout(new BorderLayout());
@@ -31,7 +33,11 @@ public class ConsultaObjetoView extends JPanel {
         JPanel botones = new JPanel(new FlowLayout(FlowLayout.LEFT));
         botones.add(btnMostrarTodos); botones.add(btnMostrarDisponibles);
         botones.add(btnMostrarDevueltos); botones.add(btnDetalle); botones.add(btnEditar);
-        superior.add(filtros); superior.add(botones); add(superior, BorderLayout.NORTH);
+        superior.add(filtros); superior.add(botones);
+        JPanel cabecera = new JPanel(new BorderLayout());
+        cabecera.add(superior, BorderLayout.NORTH);
+        cabecera.add(panelAvanzado, BorderLayout.CENTER);
+        add(cabecera, BorderLayout.NORTH);
         lista.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         add(new JScrollPane(lista), BorderLayout.CENTER); add(contador, BorderLayout.SOUTH);
         txtBusqueda.addActionListener(e -> filtrar());
@@ -41,8 +47,27 @@ public class ConsultaObjetoView extends JPanel {
         btnMostrarDevueltos.addActionListener(e -> estado.setSelectedItem("DEVUELTO"));
         criterio.addActionListener(e -> filtrar());
         estado.addActionListener(e -> filtrar());
+        panelAvanzado.agregarLimpiarListener(e -> {
+            filtrosAvanzados.clear();
+            panelAvanzado.limpiarCampos();
+            filtrar();
+        });
     
         EstiloUVG.aplicar(this);
+    }
+    public PanelFiltrosAvanzados getPanelFiltrosAvanzados() { return panelAvanzado; }
+    public void agregarAplicarFiltrosAvanzadosListener(ActionListener listener) {
+        panelAvanzado.agregarAplicarListener(listener);
+    }
+    public void aplicarFiltrosAvanzados(List<FiltroAvanzado> filtros) {
+        List<FiltroAvanzado> nuevos = new ArrayList<>();
+        if (filtros != null) {
+            for (FiltroAvanzado filtro : filtros) {
+                if (filtro != null) nuevos.add(filtro);
+            }
+        }
+        filtrosAvanzados = nuevos;
+        filtrar();
     }
     public String getTextoBusqueda() { return txtBusqueda.getText().trim(); }
     public void agregarBusquedaListener(ActionListener l) { btnBuscar.addActionListener(l); }
@@ -67,8 +92,14 @@ public class ConsultaObjetoView extends JPanel {
             try { LocalDate.parse(texto); }
             catch (DateTimeParseException e) { mostrarMensaje("Fecha invalida. Use AAAA-MM-DD."); return; }
         }
+        List<Objeto> candidatos = new ArrayList<>(datos);
+        for (FiltroAvanzado filtro : filtrosAvanzados) {
+            candidatos = filtro.filtrar(candidatos);
+            if (candidatos == null) candidatos = new ArrayList<>();
+        }
         modelo.clear();
-        for (Objeto o : datos) {
+        for (Objeto o : candidatos) {
+            if (o == null) continue;
             if (!"Todos los estados".equals(estado.getSelectedItem())
                     && !o.getEstado().equals(estado.getSelectedItem())) continue;
             if (coincide(o, opcion, texto)) modelo.addElement(o);
@@ -82,10 +113,10 @@ public class ConsultaObjetoView extends JPanel {
             case 2: return contiene(o.getNombre(), t);
             case 3: return contiene(o.getDescripcion(), t);
             case 4: return contiene(o.getLugarEncontrado(), t);
-            case 5: return o.getFechaEncontrado().toString().equals(t);
+            case 5: return o.getFechaEncontrado() != null && o.getFechaEncontrado().toString().equals(t);
             default: return contiene(String.valueOf(o.getId()), t) || contiene(o.getNombre(), t)
                 || contiene(o.getDescripcion(), t) || contiene(o.getLugarEncontrado(), t)
-                || contiene(o.getFechaEncontrado().toString(), t) || contiene(o.getEstado(), t);
+                || contiene(String.valueOf(o.getFechaEncontrado()), t) || contiene(o.getEstado(), t);
         }
     }
     private boolean contiene(String a, String b) {
